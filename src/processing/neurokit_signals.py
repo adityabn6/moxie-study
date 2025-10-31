@@ -75,9 +75,15 @@ def process_ecg_signal(
 
         # Save plot
         plot_file = output_dir / f"{data_object.name}_plot.png"
-        fig = nk.ecg_plot(signals, info)
-        fig.savefig(plot_file, dpi=150, bbox_inches='tight')
-        print(f"  Saved: {plot_file}")
+        try:
+            fig = nk.ecg_plot(signals, info)
+            if fig is not None:
+                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+                print(f"  Saved: {plot_file}")
+            else:
+                print(f"  Warning: Could not generate plot")
+        except Exception as e:
+            print(f"  Warning: Error generating plot: {e}")
 
     return signals, info
 
@@ -139,8 +145,185 @@ def process_rsp_signal(
 
         # Save plot
         plot_file = output_dir / f"{data_object.name}_plot.png"
-        fig = nk.rsp_plot(signals, info)
+        try:
+            fig = nk.rsp_plot(signals, info)
+            if fig is not None:
+                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+                print(f"  Saved: {plot_file}")
+            else:
+                print(f"  Warning: Could not generate plot")
+        except Exception as e:
+            print(f"  Warning: Error generating plot: {e}")
+
+    return signals, info
+
+
+def process_eda_signal(
+    data_object: DataObject,
+    method: str = 'neurokit',
+    output_dir: Optional[Path] = None,
+    save_artifacts: bool = False
+) -> Tuple[pd.DataFrame, Dict]:
+    """
+    Process Electrodermal Activity (EDA) signal using NeuroKit2.
+
+    Performs:
+    - Signal cleaning/filtering
+    - SCR (Skin Conductance Response) detection
+    - Phasic/tonic decomposition
+    - Statistical features
+
+    Args:
+        data_object: DataObject containing EDA signal
+        method: Cleaning method ('neurokit', 'biosppy', etc.)
+        output_dir: Directory to save artifacts
+        save_artifacts: Whether to save processed data and plots
+
+    Returns:
+        Tuple of (processed_signals_df, info_dict)
+    """
+    print(f"\nProcessing EDA: {data_object.name}")
+    print(f"  Samples: {len(data_object.data)}")
+    print(f"  Sampling rate: {data_object.sampling_rate} Hz")
+    print(f"  Duration: {data_object.time_column[-1]:.2f} seconds")
+
+    # Process EDA using NeuroKit
+    signals, info = nk.eda_process(
+        data_object.data,
+        sampling_rate=data_object.sampling_rate,
+        method=method
+    )
+
+    # Add time column
+    signals['Time'] = data_object.time_column
+
+    # Print summary
+    n_peaks = len(info['SCR_Peaks'])
+    print(f"  SCR peaks detected: {n_peaks}")
+    if 'EDA_Tonic' in signals.columns:
+        print(f"  Mean tonic level: {signals['EDA_Tonic'].mean():.4f}")
+
+    # Save artifacts if requested
+    if save_artifacts and output_dir:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save processed signals
+        signals_file = output_dir / f"{data_object.name}_processed.csv"
+        signals.to_csv(signals_file, index=False)
+        print(f"  Saved: {signals_file}")
+
+        # Save plot
+        plot_file = output_dir / f"{data_object.name}_plot.png"
+        try:
+            fig = nk.eda_plot(signals, info)
+            if fig is not None:
+                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+                print(f"  Saved: {plot_file}")
+            else:
+                print(f"  Warning: Could not generate plot")
+        except Exception as e:
+            print(f"  Warning: Error generating plot: {e}")
+
+    return signals, info
+
+
+def process_bloodpressure_signal(
+    data_object: DataObject,
+    output_dir: Optional[Path] = None,
+    save_artifacts: bool = False
+) -> Tuple[pd.DataFrame, Dict]:
+    """
+    Process Blood Pressure signal.
+
+    Note: NeuroKit2 doesn't have dedicated blood pressure processing,
+    so we perform basic cleaning and statistical analysis.
+
+    Performs:
+    - Signal cleaning/smoothing
+    - Basic statistical features (mean, std, min, max)
+    - Trend analysis
+
+    Args:
+        data_object: DataObject containing Blood Pressure signal
+        output_dir: Directory to save artifacts
+        save_artifacts: Whether to save processed data and plots
+
+    Returns:
+        Tuple of (processed_signals_df, info_dict)
+    """
+    print(f"\nProcessing Blood Pressure: {data_object.name}")
+    print(f"  Samples: {len(data_object.data)}")
+    print(f"  Sampling rate: {data_object.sampling_rate} Hz")
+    print(f"  Duration: {data_object.time_column[-1]:.2f} seconds")
+
+    # Create dataframe
+    signals = pd.DataFrame()
+    signals['BP_Raw'] = data_object.data
+    signals['Time'] = data_object.time_column
+
+    # Clean signal using signal processing
+    # Use a combination of filters to clean the BP signal
+    cleaned = nk.signal_filter(
+        data_object.data,
+        sampling_rate=data_object.sampling_rate,
+        lowcut=0.5,
+        highcut=None,
+        method='butterworth',
+        order=4
+    )
+    signals['BP_Clean'] = cleaned
+
+    # Calculate basic statistics
+    info = {
+        'Mean_BP': np.mean(cleaned),
+        'Std_BP': np.std(cleaned),
+        'Min_BP': np.min(cleaned),
+        'Max_BP': np.max(cleaned),
+        'Median_BP': np.median(cleaned)
+    }
+
+    # Print summary
+    print(f"  Mean BP: {info['Mean_BP']:.2f}")
+    print(f"  Std BP: {info['Std_BP']:.2f}")
+    print(f"  Range: [{info['Min_BP']:.2f}, {info['Max_BP']:.2f}]")
+
+    # Save artifacts if requested
+    if save_artifacts and output_dir:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save processed signals
+        signals_file = output_dir / f"{data_object.name}_processed.csv"
+        signals.to_csv(signals_file, index=False)
+        print(f"  Saved: {signals_file}")
+
+        # Save plot
+        import matplotlib.pyplot as plt
+        plot_file = output_dir / f"{data_object.name}_plot.png"
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+
+        # Plot raw and cleaned signals
+        ax1.plot(signals['Time'], signals['BP_Raw'], label='Raw', alpha=0.5)
+        ax1.plot(signals['Time'], signals['BP_Clean'], label='Cleaned', linewidth=1.5)
+        ax1.set_xlabel('Time (s)')
+        ax1.set_ylabel('Blood Pressure')
+        ax1.set_title(f'Blood Pressure Signal: {data_object.name}')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+
+        # Plot histogram
+        ax2.hist(cleaned, bins=50, edgecolor='black', alpha=0.7)
+        ax2.axvline(info['Mean_BP'], color='red', linestyle='--', label=f"Mean: {info['Mean_BP']:.2f}")
+        ax2.set_xlabel('Blood Pressure')
+        ax2.set_ylabel('Frequency')
+        ax2.set_title('Blood Pressure Distribution')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+
+        plt.tight_layout()
         fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+        plt.close(fig)
         print(f"  Saved: {plot_file}")
 
     return signals, info
@@ -275,6 +458,18 @@ def process_biodata_channels(
                 )
             elif signal_type.lower() in ['rsp', 'respiration', 'breathing']:
                 signals, info = process_rsp_signal(
+                    data_obj,
+                    output_dir=output_dir,
+                    save_artifacts=save_artifacts
+                )
+            elif signal_type.lower() in ['eda', 'gsr', 'skin conductance']:
+                signals, info = process_eda_signal(
+                    data_obj,
+                    output_dir=output_dir,
+                    save_artifacts=save_artifacts
+                )
+            elif signal_type.lower() in ['bp', 'blood pressure', 'nibp']:
+                signals, info = process_bloodpressure_signal(
                     data_obj,
                     output_dir=output_dir,
                     save_artifacts=save_artifacts

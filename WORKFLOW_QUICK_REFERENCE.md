@@ -9,7 +9,23 @@ cd moxie_analysis
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Process New Data
+### 2️⃣ Process Signals (NeuroKit2)
+
+```bash
+# Process a single ACQ file
+python scripts/process_signals.py "Participant Data/ID/Visit/Acqknowledge/file.acq" -o ./processed
+
+# Process all ACQ files
+python scripts/process_signals.py --all --data-dir "Participant Data" -o ./processed
+```
+
+**Outputs:**
+- ECG: R-peaks, heart rate, P/Q/S/T waves
+- EDA: SCR peaks, tonic/phasic decomposition
+- RSP: Breathing rate, respiratory cycles
+- Blood Pressure: Cleaned signal, statistics
+
+### 3️⃣ Quality Assessment
 
 ```bash
 # Process all new/changed files (incremental mode)
@@ -19,7 +35,7 @@ python scripts/quality_check.py "/path/to/Participant Data" -o ./output
 # Subsequent runs only process new participants!
 ```
 
-### 3️⃣ Analyze Quality
+### 4️⃣ Analyze Quality
 
 ```bash
 # Generate text report
@@ -32,9 +48,11 @@ python scripts/visualize_quality.py ./output
 python scripts/analyze_quality.py ./output --export-csv
 ```
 
-### 4️⃣ Review Results
+### 5️⃣ Review Results
 
 **Check these files:**
+- `processed/{channel}_processed.csv` - Processed signals with features
+- `processed/{channel}_plot.png` - Signal visualizations
 - `output/quality_analysis_report.txt` - Detailed findings
 - `output/visualizations/*.png` - Quality charts
 - `output/{participant}/{visit}/*.html` - Interactive plots
@@ -43,7 +61,23 @@ python scripts/analyze_quality.py ./output --export-csv
 
 ## Common Commands
 
-### Processing
+### Signal Processing
+
+```bash
+# Single file (basic)
+python scripts/process_signals.py "file.acq" -o ./output
+
+# Single file (verbose)
+python scripts/process_signals.py "file.acq" -o ./output -v
+
+# All files in directory
+python scripts/process_signals.py --all --data-dir "Participant Data"
+
+# Don't save artifacts (CSV only, no plots)
+python scripts/process_signals.py "file.acq" -o ./output --no-save
+```
+
+### Quality Assessment
 
 ```bash
 # Normal (skip already processed)
@@ -131,15 +165,24 @@ python scripts/visualize_quality.py ./output --format pdf
 # Add new participants to Participant_Data/
 ```
 
-### Tuesday: Processing
+### Tuesday: Signal Processing
 ```bash
 cd moxie_analysis
-source ../moxie/bin/activate  # Or your venv
+source venv/bin/activate
+
+# Process physiological signals
+python scripts/process_signals.py --all --data-dir "Participant Data" -o ./processed
+```
+✓ Extracts ECG, EDA, RSP, Blood Pressure features
+
+### Wednesday: Quality Assessment
+```bash
+# Quality check on raw signals
 python scripts/quality_check.py "/path/to/Participant Data" -o ./output
 ```
 ✓ Only new participants are processed!
 
-### Wednesday: Quality Review
+### Thursday: Quality Review
 ```bash
 python scripts/analyze_quality.py ./output --export-csv
 python scripts/visualize_quality.py ./output
@@ -150,11 +193,12 @@ Review:
 - Visualizations for patterns
 - Individual HTML plots for detailed inspection
 
-### Thursday: Follow-up
+### Friday: Follow-up
 - Address any quality concerns
 - Update protocols if needed
 - Document decisions
 - Re-record if necessary
+- Export processed features for statistical analysis
 
 ---
 
@@ -202,6 +246,7 @@ python scripts/quality_check.py "/path/to/data" -o ./output
 ## Help & Documentation
 
 - `README.md` - Complete overview
+- `SIGNAL_PROCESSING_GUIDE.md` - Signal processing documentation
 - `INCREMENTAL_PROCESSING.md` - Incremental processing details
 - `QUALITY_ANALYSIS_GUIDE.md` - Comprehensive analysis guide
 - `SETUP_GUIDE.md` - Installation instructions
@@ -237,16 +282,20 @@ cat output/.processing_log.json | grep '"success": false'
 
 **Start to finish for new data:**
 ```bash
-# 1. Process
+# 1. Process signals (extract features)
+python scripts/process_signals.py --all --data-dir "Participant Data" -o ./processed
+
+# 2. Quality check (assess data quality)
 python scripts/quality_check.py "/path/to/data" -o ./output
 
-# 2. Analyze
+# 3. Analyze quality
 python scripts/analyze_quality.py ./output --export-csv
 python scripts/visualize_quality.py ./output
 
-# 3. Review
+# 4. Review
 cat output/quality_analysis_report.txt
 open output/visualizations/
+ls processed/*.csv  # Your processed signal features
 ```
 
 **That's it!** 🎉

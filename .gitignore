@@ -53,3 +53,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Participant data directory
+Participant Data/

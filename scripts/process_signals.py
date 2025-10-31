@@ -59,10 +59,12 @@ def process_single_file(
 
     # Define channels to process
     # Pattern matching for channel names
+    # This will match all channels that contain these strings
     channel_patterns = {
-        'ecg': 'ECG',
-        'rsp': 'RSP',
-        'bp': 'Blood Pressure'
+        'ecg': 'ECG',           # ECG signal
+        'eda': 'EDA',           # Electrodermal Activity
+        'rsp': 'RSP',           # Respiratory signals (will match both RSP channels)
+        'bp': 'Blood Pressure'  # Non-invasive Blood Pressure (NIBP)
     }
 
     # Process channels

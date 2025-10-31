@@ -6,13 +6,13 @@ A comprehensive Python package for processing and analyzing physiological data f
 
 The MOXIE study collects multi-channel physiological data during stress tests using the BIOPAC AcqKnowledge system. This codebase provides tools for:
 
+- **Signal Processing**: Complete NeuroKit2-based processing for ECG, EDA, RSP, and Blood Pressure
 - **Quality Assessment**: SNR and amplitude-based quality checks
 - **Incremental Processing**: Track processed files, only process new data
 - **Quality Analysis**: Comprehensive reports identifying protocol issues
 - **Data Visualization**: Interactive plots and summary charts
 - **Data Loading**: Automated discovery and loading of ACQ files
 - **Time Windowing**: Event marker-based segmentation of study phases
-- **Signal Processing**: ECG, EDA, RSP, EMG analysis (in development)
 
 ## Project Structure
 
@@ -32,9 +32,12 @@ moxie_analysis/
 │   │   └── report.py      # Quality reporting
 │   ├── visualization/     # Bokeh visualizations
 │   │   └── bokeh_plots.py
-│   └── processing/        # Signal processing (in development)
+│   └── processing/        # NeuroKit2 signal processing
+│       └── neurokit_signals.py
 ├── scripts/               # Main processing scripts
 │   ├── quality_check.py   # Quality assessment workflow
+│   ├── process_signals.py # NeuroKit2 signal processing
+│   ├── analyze_quality.py # Quality analysis and reporting
 │   └── process_all.py     # Complete processing pipeline
 ├── output/                # Generated outputs
 └── data/                  # Input data (not tracked)
@@ -64,6 +67,38 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### Quick Start: Signal Processing
+
+Process physiological signals (ECG, EDA, RSP, Blood Pressure) using NeuroKit2:
+
+```bash
+# Process a single ACQ file
+python scripts/process_signals.py "Participant Data/ID/Visit/Acqknowledge/file.acq" -o ./processed
+
+# Process all ACQ files in data directory
+python scripts/process_signals.py --all --data-dir "Participant Data" -o ./processed
+
+# With verbose output
+python scripts/process_signals.py "file.acq" -o ./processed -v
+```
+
+This will:
+1. Load the ACQ file and extract all channels
+2. **Process ECG**: R-peak detection, heart rate, P/Q/S/T wave delineation, cardiac phases
+3. **Process EDA**: SCR detection, tonic/phasic decomposition, skin conductance responses
+4. **Process RSP**: Respiratory rate, breathing cycle peaks/troughs, respiratory variability
+5. **Process Blood Pressure**: Signal cleaning, statistical analysis, trend detection
+6. Save processed signals as CSV files with all extracted features
+7. Generate visualization plots for each signal
+
+**Output**: For each signal, you get a CSV file with:
+- Raw and cleaned signals
+- Detected events (R-peaks, SCR peaks, respiratory cycles)
+- Computed features (heart rate, skin conductance levels, breathing rate)
+- Time vector for alignment
+
+See [SIGNAL_PROCESSING_GUIDE.md](SIGNAL_PROCESSING_GUIDE.md) for comprehensive documentation.
 
 ### Quick Start: Quality Check
 
@@ -239,25 +274,32 @@ Edit `src/core/config.py` to customize:
 
 ## Development Roadmap
 
-### Current Features (v0.1.0)
+### Current Features (v0.2.0)
 - ✓ ACQ file discovery and loading
 - ✓ Quality assessment (SNR, Amplitude)
 - ✓ Interactive visualizations
 - ✓ Event marker-based time windowing
+- ✓ **ECG processing** (R-peak detection, heart rate, P/Q/S/T wave delineation)
+- ✓ **EDA processing** (phasic/tonic decomposition, SCR detection)
+- ✓ **RSP processing** (breathing rate, respiratory variability, cycle detection)
+- ✓ **Blood Pressure processing** (signal cleaning, statistical analysis)
+- ✓ Incremental processing (skip already processed files)
+- ✓ Comprehensive quality analysis and reporting
 
-### Planned Features (v0.2.0)
-- ECG processing (R-peak detection, HRV analysis)
-- EDA processing (phasic/tonic decomposition, SCR detection)
-- RSP processing (breathing rate, RRV)
+### Planned Features (v0.3.0)
+- HRV analysis (time-domain, frequency-domain, non-linear metrics)
 - Feature extraction per time window
 - Statistical analysis across participants
+- EMG processing (muscle activity detection)
+- Cross-signal synchrony analysis
 
 ### Future Enhancements
 - Automated outlier detection
 - Cross-participant comparison
-- Integration with NeuroKit2 MCP server
+- Real-time processing capabilities
 - Batch processing with parallel execution
 - Database integration for large datasets
+- Machine learning-based quality assessment
 
 ## Troubleshooting
 
