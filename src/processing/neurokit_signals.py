@@ -7,6 +7,10 @@ and other physiological signals using NeuroKit2.
 Integrates with the BioData/DataObject structure from core.data_models.
 """
 
+import matplotlib
+matplotlib.use('Agg')  # Set backend for headless operation BEFORE importing pyplot
+import matplotlib.pyplot as plt
+
 import neurokit2 as nk
 import numpy as np
 import pandas as pd
@@ -14,6 +18,29 @@ from typing import Tuple, Optional, Dict
 from pathlib import Path
 
 from core.data_models import DataObject, BioData
+
+
+def downsample_for_plotting(df: pd.DataFrame, max_points: int = 10000) -> pd.DataFrame:
+    """
+    Downsample a DataFrame for plotting to improve performance.
+
+    For very large datasets (millions of points), plotting every point is slow
+    and unnecessary. This function downsamples to a maximum number of points
+    while preserving the overall signal shape.
+
+    Args:
+        df: DataFrame to downsample
+        max_points: Maximum number of points to keep (default: 10000)
+
+    Returns:
+        Downsampled DataFrame
+    """
+    if len(df) <= max_points:
+        return df
+
+    # Calculate step size for uniform downsampling
+    step = len(df) // max_points
+    return df.iloc[::step].copy()
 
 
 def process_ecg_signal(
@@ -76,14 +103,25 @@ def process_ecg_signal(
         # Save plot
         plot_file = output_dir / f"{data_object.name}_plot.png"
         try:
-            fig = nk.ecg_plot(signals, info)
-            if fig is not None:
-                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
-                print(f"  Saved: {plot_file}")
+            # Downsample for plotting to improve performance with large datasets
+            print(f"  Generating plot (downsampling {len(signals)} points for visualization)...")
+            signals_plot = downsample_for_plotting(signals, max_points=10000)
+
+            # NeuroKit plot functions return the figure object
+            plot_result = nk.ecg_plot(signals_plot, info)
+            # Get the current figure if plot_result is None or axes
+            if plot_result is None or not hasattr(plot_result, 'savefig'):
+                fig = plt.gcf()
             else:
-                print(f"  Warning: Could not generate plot")
+                fig = plot_result
+
+            fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+            plt.close(fig)  # Close figure to free memory
+            print(f"  Saved: {plot_file}")
         except Exception as e:
             print(f"  Warning: Error generating plot: {e}")
+            import traceback
+            traceback.print_exc()
 
     return signals, info
 
@@ -146,12 +184,35 @@ def process_rsp_signal(
         # Save plot
         plot_file = output_dir / f"{data_object.name}_plot.png"
         try:
-            fig = nk.rsp_plot(signals, info)
-            if fig is not None:
-                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
-                print(f"  Saved: {plot_file}")
-            else:
-                print(f"  Warning: Could not generate plot")
+            # Downsample for plotting to improve performance with large datasets
+            print(f"  Generating plot (downsampling {len(signals)} points for visualization)...")
+            signals_plot = downsample_for_plotting(signals, max_points=10000)
+
+            # Create a simple matplotlib plot instead of using NeuroKit's plot
+            # (NeuroKit's rsp_plot has issues with downsampled data and peak indices)
+            fig, axes = plt.subplots(3, 1, figsize=(15, 10))
+
+            # Plot raw signal
+            axes[0].plot(signals_plot['Time'], signals_plot['RSP_Raw'], color='gray', linewidth=0.5)
+            axes[0].set_ylabel('Raw RSP')
+            axes[0].set_title(f'Respiratory Signal: {data_object.name}')
+            axes[0].grid(True, alpha=0.3)
+
+            # Plot cleaned signal
+            axes[1].plot(signals_plot['Time'], signals_plot['RSP_Clean'], color='blue', linewidth=0.7)
+            axes[1].set_ylabel('Cleaned RSP')
+            axes[1].grid(True, alpha=0.3)
+
+            # Plot respiratory rate
+            axes[2].plot(signals_plot['Time'], signals_plot['RSP_Rate'], color='red', linewidth=0.7)
+            axes[2].set_ylabel('Rate (breaths/min)')
+            axes[2].set_xlabel('Time (s)')
+            axes[2].grid(True, alpha=0.3)
+
+            plt.tight_layout()
+            fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+            plt.close(fig)  # Close figure to free memory
+            print(f"  Saved: {plot_file}")
         except Exception as e:
             print(f"  Warning: Error generating plot: {e}")
 
@@ -216,14 +277,25 @@ def process_eda_signal(
         # Save plot
         plot_file = output_dir / f"{data_object.name}_plot.png"
         try:
-            fig = nk.eda_plot(signals, info)
-            if fig is not None:
-                fig.savefig(plot_file, dpi=150, bbox_inches='tight')
-                print(f"  Saved: {plot_file}")
+            # Downsample for plotting to improve performance with large datasets
+            print(f"  Generating plot (downsampling {len(signals)} points for visualization)...")
+            signals_plot = downsample_for_plotting(signals, max_points=10000)
+
+            # NeuroKit plot functions return the figure object
+            plot_result = nk.eda_plot(signals_plot, info)
+            # Get the current figure if plot_result is None or axes
+            if plot_result is None or not hasattr(plot_result, 'savefig'):
+                fig = plt.gcf()
             else:
-                print(f"  Warning: Could not generate plot")
+                fig = plot_result
+
+            fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+            plt.close(fig)  # Close figure to free memory
+            print(f"  Saved: {plot_file}")
         except Exception as e:
             print(f"  Warning: Error generating plot: {e}")
+            import traceback
+            traceback.print_exc()
 
     return signals, info
 
@@ -299,32 +371,40 @@ def process_bloodpressure_signal(
         print(f"  Saved: {signals_file}")
 
         # Save plot
-        import matplotlib.pyplot as plt
         plot_file = output_dir / f"{data_object.name}_plot.png"
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        try:
+            # Downsample for plotting to improve performance with large datasets
+            print(f"  Generating plot (downsampling {len(signals)} points for visualization)...")
+            signals_plot = downsample_for_plotting(signals, max_points=10000)
 
-        # Plot raw and cleaned signals
-        ax1.plot(signals['Time'], signals['BP_Raw'], label='Raw', alpha=0.5)
-        ax1.plot(signals['Time'], signals['BP_Clean'], label='Cleaned', linewidth=1.5)
-        ax1.set_xlabel('Time (s)')
-        ax1.set_ylabel('Blood Pressure')
-        ax1.set_title(f'Blood Pressure Signal: {data_object.name}')
-        ax1.legend()
-        ax1.grid(True, alpha=0.3)
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
 
-        # Plot histogram
-        ax2.hist(cleaned, bins=50, edgecolor='black', alpha=0.7)
-        ax2.axvline(info['Mean_BP'], color='red', linestyle='--', label=f"Mean: {info['Mean_BP']:.2f}")
-        ax2.set_xlabel('Blood Pressure')
-        ax2.set_ylabel('Frequency')
-        ax2.set_title('Blood Pressure Distribution')
-        ax2.legend()
-        ax2.grid(True, alpha=0.3)
+            # Plot raw and cleaned signals
+            ax1.plot(signals_plot['Time'], signals_plot['BP_Raw'], label='Raw', alpha=0.5)
+            ax1.plot(signals_plot['Time'], signals_plot['BP_Clean'], label='Cleaned', linewidth=1.5)
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Blood Pressure')
+            ax1.set_title(f'Blood Pressure Signal: {data_object.name}')
+            ax1.legend()
+            ax1.grid(True, alpha=0.3)
 
-        plt.tight_layout()
-        fig.savefig(plot_file, dpi=150, bbox_inches='tight')
-        plt.close(fig)
-        print(f"  Saved: {plot_file}")
+            # Plot histogram (use full data for histogram)
+            ax2.hist(cleaned, bins=50, edgecolor='black', alpha=0.7)
+            ax2.axvline(info['Mean_BP'], color='red', linestyle='--', label=f"Mean: {info['Mean_BP']:.2f}")
+            ax2.set_xlabel('Blood Pressure')
+            ax2.set_ylabel('Frequency')
+            ax2.set_title('Blood Pressure Distribution')
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+
+            plt.tight_layout()
+            fig.savefig(plot_file, dpi=150, bbox_inches='tight')
+            plt.close(fig)  # Close figure to free memory
+            print(f"  Saved: {plot_file}")
+        except Exception as e:
+            print(f"  Warning: Error generating plot: {e}")
+            import traceback
+            traceback.print_exc()
 
     return signals, info
 

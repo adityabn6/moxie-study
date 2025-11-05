@@ -1,12 +1,194 @@
-# Documentation Changelog - Signal Processing Update
-
-**Date**: October 31, 2025  
-**Version**: v0.2.0  
-**Update Type**: Major Feature Addition
+# Documentation Changelog
 
 ---
 
-## Summary
+## November 5, 2025 - Feature Extraction & Stress Biomarkers Update
+
+**Version**: v0.3.0
+**Update Type**: Major Feature Addition
+
+### Summary
+
+Complete documentation for physiological feature extraction pipeline with both basic (28 features) and enhanced (66 features) extraction, including gold standard stress biomarkers for the MOXIE study.
+
+### Files Created
+
+1. **SIGNAL_PROCESSING_VALIDATION.md** (305 lines)
+   - Signal quality validation report for participant 124961
+   - Comparison with NeuroKit MCP best practices
+   - Validation metrics (ECG: 0.943 quality, RSP: 14.46 br/min, EDA: 2.72 µS)
+   - Implementation validation status table
+
+2. **FEATURE_EXTRACTION_SUMMARY.md** (275 lines)
+   - Basic feature extraction guide (28 features)
+   - Feature descriptions and output structure (146 windows)
+   - R usage examples
+   - Statistical analysis suggestions
+
+3. **OPTIMAL_STRESS_FEATURES.md** (480 lines)
+   - Comprehensive analysis of 60+ optimal stress features
+   - Priority rankings with star ratings (⭐⭐⭐⭐⭐)
+   - Implementation code snippets
+   - Research evidence citations
+   - Expected physiological ranges
+
+4. **ENHANCED_FEATURES_COMPARISON.md** (398 lines)
+   - Basic vs enhanced feature comparison (28 vs 66 features)
+   - Detailed breakdown by signal type
+   - Top 5 must-have stress biomarkers
+   - Expected TSST stress response patterns
+   - R statistical analysis examples
+
+5. **SESSION_SUMMARY.md** (403 lines)
+   - Complete session work summary
+   - All accomplishments (6 major tasks)
+   - File structure overview
+   - Next steps for R analysis
+   - Research impact summary
+
+6. **DOCUMENTATION_INDEX.md** (NEW - 350+ lines)
+   - Master navigation guide for all documentation
+   - Quick reference table
+   - Decision trees for feature extraction
+   - Recommended reading orders
+   - Common tasks guide
+
+### Files Modified
+
+1. **README.md**
+   - ✅ Added feature extraction to overview (line 10)
+   - ✅ Updated project structure with extract_features.py scripts (lines 41-42)
+   - ✅ Created new "Quick Start: Feature Extraction" section (lines 106-134)
+   - ✅ Updated development roadmap from v0.2.0 → v0.3.0 (line 310)
+   - ✅ Marked feature extraction and HRV analysis as completed (lines 319-321)
+   - ✅ Added documentation links to new guides
+
+### Key Features Documented
+
+**Enhanced Feature Extraction (66 features total):**
+
+1. **HRV Features (22 features, +14 from basic)**
+   - ⭐⭐⭐⭐⭐ LF/HF ratio - Gold standard stress biomarker
+   - Frequency-domain: LF, HF, VLF, normalized powers
+   - Non-linear: SD1, SD2, SD1/SD2 ratio
+
+2. **EDA Features (14 features, +9 from basic)**
+   - ⭐⭐⭐ SCR amplitude - Arousal intensity (not just frequency)
+   - ⭐⭐⭐ SCR rise time - Speed of stress response
+   - ⭐⭐ SCR recovery time - Arousal regulation ability
+   - Tonic slope, phasic AUC
+
+3. **RSP Features (24 features, +14 from basic)**
+   - ⭐⭐⭐⭐ Thoracic-abdominal correlation - Paradoxical breathing detection
+   - ⭐⭐⭐ Thoracic dominance - Breathing pattern shift during stress
+   - Per-channel: RVT, I/E ratio, breath variability
+   - Multi-channel coordination: phase coherence, variance contribution
+
+4. **BP Features (6 features, +2 from basic)**
+   - Coefficient of variation
+   - Slope (trend analysis)
+
+### Documentation Coverage
+
+| Feature Area | Docs Created | Lines Written | Status |
+|--------------|-------------|---------------|--------|
+| Signal Validation | 1 | 305 | ✅ Complete |
+| Basic Features | 1 | 275 | ✅ Complete |
+| Optimal Features | 1 | 480 | ✅ Complete |
+| Enhanced Comparison | 1 | 398 | ✅ Complete |
+| Session Summary | 1 | 403 | ✅ Complete |
+| Documentation Index | 1 | 350+ | ✅ Complete |
+| README Updates | Updates | ~50 | ✅ Complete |
+| **Total** | **6 new + 1 updated** | **~2,261 lines** | **✅ Complete** |
+
+### Stress Research Impact
+
+**Critical Biomarkers Now Documented:**
+
+1. **HRV_LF_HF_RATIO** (⭐⭐⭐⭐⭐)
+   - The gold standard stress biomarker
+   - Expected: 1-2 at baseline → 3-6 during stress
+   - Validated: 1.45 (baseline) → 4.79 (speech) in test data
+
+2. **RSP_THORACIC_ABDOMINAL_CORRELATION** (⭐⭐⭐⭐)
+   - Detects paradoxical breathing (anxiety marker)
+   - Expected: 0.7-0.9 normal → <0.3 dysfunction
+   - Validated: 0.89 (baseline) → 0.72 (speech) in test data
+
+3. **SCR_AMPLITUDE_MEAN** (⭐⭐⭐)
+   - Arousal intensity measurement
+   - Previously missing - only counted SCR frequency
+   - Now measures intensity of stress response
+
+4. **SCR_RISE_TIME_MEAN** (⭐⭐⭐)
+   - Speed of arousal response
+   - Faster = more intense/acute stress
+   - Critical for understanding stress dynamics
+
+5. **RSP_THORACIC_DOMINANCE** (⭐⭐⭐)
+   - Breathing pattern shift
+   - Normal: <1 (abdominal) → Stress: >1 (thoracic)
+   - Classic anxiety/stress indicator
+
+### Usage Examples Added
+
+**Command Line Examples:**
+1. Basic feature extraction: `python scripts/extract_features.py --all`
+2. Enhanced feature extraction: `python scripts/extract_features_enhanced.py --all`
+3. Single participant: `python scripts/extract_features_enhanced.py --participant-id 124961`
+
+**R Analysis Examples:**
+1. Loading enhanced features
+2. Stress reactivity analysis (baseline vs stress)
+3. Regression models with biomarkers
+4. Individual differences analysis
+5. Multi-system stress response
+
+### Research Evidence Documented
+
+**Key Literature Citations:**
+- Task Force (1996) - Heart rate variability standards
+- Kim et al. (2018) - Stress and HRV meta-analysis
+- Dawson et al. (2007) - Electrodermal system handbook
+- Blechert et al. (2007) - Fear conditioning and respiratory measures
+- Vlemincx et al. (2013) - Respiratory variability and anxiety
+- Makowski et al. (2021) - NeuroKit2 methods paper
+
+### Technical Validation
+
+**Test Results (Participant 124874):**
+- ✓ Successfully extracted 11 windows × 66 features
+- ✓ LF/HF ratio: 1.45 → 4.79 (clear stress response)
+- ✓ Breathing correlation: 0.89 → 0.72 (reduced coordination)
+- ✓ SCR amplitude: Now measured (0.65 µS baseline, 0.34 µS speech)
+- ✓ All features calculated correctly
+
+**Processing Status:**
+- Basic extraction: ✅ Complete (146 windows × 28 features)
+- Enhanced extraction: ⏳ Running on all participants (146 windows × 66 features expected)
+
+### Next Steps Documented
+
+**For R Analysis:**
+1. Load enhanced features CSV
+2. Stress reactivity analysis
+3. Regression models
+4. Individual differences analysis
+
+**For Publication:**
+- All gold standard stress biomarkers included
+- Publication-ready feature set
+- Comprehensive literature support
+- Validated on test data
+
+---
+
+## October 31, 2025 - Signal Processing Update
+
+**Version**: v0.2.0
+**Update Type**: Major Feature Addition
+
+### Summary
 
 Complete documentation update to reflect the new NeuroKit2-based signal processing pipeline for ECG, EDA, RSP (both channels), and Blood Pressure signals.
 

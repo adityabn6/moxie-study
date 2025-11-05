@@ -7,6 +7,7 @@ A comprehensive Python package for processing and analyzing physiological data f
 The MOXIE study collects multi-channel physiological data during stress tests using the BIOPAC AcqKnowledge system. This codebase provides tools for:
 
 - **Signal Processing**: Complete NeuroKit2-based processing for ECG, EDA, RSP, and Blood Pressure
+- **Feature Extraction**: Basic (28 features) and Enhanced (66 features) extraction for stress research
 - **Quality Assessment**: SNR and amplitude-based quality checks
 - **Incremental Processing**: Track processed files, only process new data
 - **Quality Analysis**: Comprehensive reports identifying protocol issues
@@ -35,10 +36,12 @@ moxie_analysis/
 │   └── processing/        # NeuroKit2 signal processing
 │       └── neurokit_signals.py
 ├── scripts/               # Main processing scripts
-│   ├── quality_check.py   # Quality assessment workflow
-│   ├── process_signals.py # NeuroKit2 signal processing
-│   ├── analyze_quality.py # Quality analysis and reporting
-│   └── process_all.py     # Complete processing pipeline
+│   ├── quality_check.py              # Quality assessment workflow
+│   ├── process_signals.py            # NeuroKit2 signal processing
+│   ├── extract_features.py           # Basic feature extraction (28 features)
+│   ├── extract_features_enhanced.py  # Enhanced feature extraction (66 features)
+│   ├── analyze_quality.py            # Quality analysis and reporting
+│   └── process_all.py                # Complete processing pipeline
 ├── output/                # Generated outputs
 └── data/                  # Input data (not tracked)
 ```
@@ -99,6 +102,36 @@ This will:
 - Time vector for alignment
 
 See [SIGNAL_PROCESSING_GUIDE.md](SIGNAL_PROCESSING_GUIDE.md) for comprehensive documentation.
+
+### Quick Start: Feature Extraction
+
+Extract aggregated physiological features for statistical analysis in R:
+
+```bash
+# Basic feature extraction (28 features - time-domain HRV, basic stats)
+python scripts/extract_features.py --all -o features.csv
+
+# Enhanced feature extraction (66 features - includes LF/HF ratio, breathing coordination, SCR dynamics)
+python scripts/extract_features_enhanced.py --all -o features_enhanced.csv
+
+# Process specific participant
+python scripts/extract_features_enhanced.py --participant-id 124961 -v
+```
+
+This will:
+1. Load processed signal CSVs from `process_signals.py`
+2. Extract event markers to identify protocol phases (Baseline, Speech, Arithmetic, Recovery)
+3. Calculate features for each time window
+4. **Enhanced version adds**: HRV frequency-domain (LF/HF ratio), SCR dynamics (amplitude, rise time), multi-channel breathing coordination
+5. Save aggregated features as CSV for regression analysis
+
+**Output**: CSV with one row per protocol phase containing:
+- **HRV metrics**: Heart rate, RMSSD, SDNN, pNN50, LF/HF ratio (enhanced)
+- **EDA metrics**: Tonic level, SCR count, SCR amplitude/rise time (enhanced)
+- **RSP metrics**: Breathing rate, amplitude, thoracic-abdominal coordination (enhanced)
+- **BP metrics**: Mean, variability, trend
+
+See [ENHANCED_FEATURES_COMPARISON.md](ENHANCED_FEATURES_COMPARISON.md) for detailed feature comparison and [OPTIMAL_STRESS_FEATURES.md](OPTIMAL_STRESS_FEATURES.md) for stress research recommendations.
 
 ### Quick Start: Quality Check
 
@@ -274,7 +307,7 @@ Edit `src/core/config.py` to customize:
 
 ## Development Roadmap
 
-### Current Features (v0.2.0)
+### Current Features (v0.3.0)
 - ✓ ACQ file discovery and loading
 - ✓ Quality assessment (SNR, Amplitude)
 - ✓ Interactive visualizations
@@ -283,15 +316,17 @@ Edit `src/core/config.py` to customize:
 - ✓ **EDA processing** (phasic/tonic decomposition, SCR detection)
 - ✓ **RSP processing** (breathing rate, respiratory variability, cycle detection)
 - ✓ **Blood Pressure processing** (signal cleaning, statistical analysis)
+- ✓ **Feature extraction** (basic: 28 features, enhanced: 66 features)
+- ✓ **HRV analysis** (time-domain, frequency-domain, non-linear metrics)
+- ✓ **Stress biomarkers** (LF/HF ratio, breathing coordination, SCR dynamics)
 - ✓ Incremental processing (skip already processed files)
 - ✓ Comprehensive quality analysis and reporting
 
-### Planned Features (v0.3.0)
-- HRV analysis (time-domain, frequency-domain, non-linear metrics)
-- Feature extraction per time window
+### Planned Features (v0.4.0)
 - Statistical analysis across participants
 - EMG processing (muscle activity detection)
 - Cross-signal synchrony analysis
+- Automated outlier detection
 
 ### Future Enhancements
 - Automated outlier detection
@@ -334,6 +369,15 @@ Research use only - See study protocol for data usage guidelines.
 ## Contact
 
 For questions about the MOXIE study or this codebase, contact the research team.
+
+## Documentation
+
+For comprehensive documentation, see:
+- **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** - Complete documentation navigation guide
+- **[ENHANCED_FEATURES_COMPARISON.md](ENHANCED_FEATURES_COMPARISON.md)** - Feature extraction guide (recommended)
+- **[SIGNAL_PROCESSING_GUIDE.md](SIGNAL_PROCESSING_GUIDE.md)** - Signal processing details
+- **[SESSION_SUMMARY.md](SESSION_SUMMARY.md)** - Latest work summary
+- **[DOCUMENTATION_CHANGELOG.md](DOCUMENTATION_CHANGELOG.md)** - Version history
 
 ## Acknowledgments
 
