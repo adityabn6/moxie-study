@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 MOXIE Quality Visualization Script
 
@@ -94,7 +95,7 @@ def plot_quality_distribution(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def plot_participant_heatmap(df: pd.DataFrame, output_file: Path):
@@ -134,7 +135,7 @@ def plot_participant_heatmap(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def plot_channel_comparison(df: pd.DataFrame, output_file: Path):
@@ -168,7 +169,7 @@ def plot_channel_comparison(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def plot_visit_comparison(df: pd.DataFrame, output_file: Path):
@@ -217,7 +218,7 @@ def plot_visit_comparison(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def plot_participant_overview(df: pd.DataFrame, output_file: Path):
@@ -261,7 +262,7 @@ def plot_participant_overview(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def plot_scatter_snr_vs_amplitude(df: pd.DataFrame, output_file: Path):
@@ -301,7 +302,7 @@ def plot_scatter_snr_vs_amplitude(df: pd.DataFrame, output_file: Path):
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Saved: {output_file.name}")
+    print(f"  [OK] Saved: {output_file.name}")
 
 
 def main(output_dir: str, format: str = 'png'):
@@ -356,7 +357,7 @@ def main(output_dir: str, format: str = 'png'):
     plot_visit_comparison(df, viz_dir / f"visit_comparison.{format}")
     plot_scatter_snr_vs_amplitude(df, viz_dir / f"snr_vs_amplitude.{format}")
 
-    print(f"\n✓ All visualizations saved to: {viz_dir}")
+    print(f"\n[OK] All visualizations saved to: {viz_dir}")
     print(f"  Format: {format.upper()}")
     print("\nOpen these files to review quality patterns!")
 

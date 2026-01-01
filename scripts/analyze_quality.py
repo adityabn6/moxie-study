@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 MOXIE Quality Analysis Script
 
@@ -310,7 +311,7 @@ def generate_text_report(df: pd.DataFrame, output_dir: Path):
             f.write("\n")
 
         if not problem_participants and not problem_channels:
-            f.write("✓ Overall data quality appears good!\n")
+            f.write("[OK] Overall data quality appears good!\n")
             f.write("  Continue current experimental protocols.\n\n")
 
         f.write("="*80 + "\n")
@@ -374,17 +375,17 @@ def print_console_summary(df: pd.DataFrame):
     problem_channels = identify_problem_channels(df)
 
     if problem_participants:
-        print(f"⚠ Participants with quality concerns: {len(problem_participants)}")
+        print(f"[!] Participants with quality concerns: {len(problem_participants)}")
         for pid in problem_participants[:5]:  # Show first 5
             print(f"   - {pid}")
         if len(problem_participants) > 5:
             print(f"   ... and {len(problem_participants) - 5} more")
     else:
-        print("✓ No participants with major quality concerns")
+        print("[OK] No participants with major quality concerns")
     print()
 
     if problem_channels:
-        print(f"⚠ Channels with quality concerns: {len(problem_channels)}")
+        print(f"[!] Channels with quality concerns: {len(problem_channels)}")
         for channel in problem_channels:
             avg_flagged = df[df['channel'] == channel].agg({
                 'snr_flagged_pct': 'mean',
@@ -393,7 +394,7 @@ def print_console_summary(df: pd.DataFrame):
             avg = (avg_flagged['snr_flagged_pct'] + avg_flagged['amp_flagged_pct']) / 2
             print(f"   - {channel}: {avg:.1f}% flagged")
     else:
-        print("✓ No channels with major quality concerns")
+        print("[OK] No channels with major quality concerns")
     print()
 
     print("="*80 + "\n")
@@ -416,7 +417,7 @@ def main(output_dir: str, export_csv: bool = False, detailed: bool = False):
     try:
         log_data = load_processing_log(log_file)
     except FileNotFoundError as e:
-        print(f"\n✗ Error: {e}")
+        print(f"\n[!] Error: {e}")
         print("\nMake sure you've run quality_check.py first!")
         return
 
@@ -435,7 +436,7 @@ def main(output_dir: str, export_csv: bool = False, detailed: bool = False):
     # Generate text report
     print("Generating reports...")
     report_file = generate_text_report(df, output_path)
-    print(f"\n✓ Text report saved: {report_file}")
+    print(f"\n[OK] Text report saved: {report_file}")
 
     # Export CSVs if requested
     if export_csv:
